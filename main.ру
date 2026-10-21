@@ -1,0 +1,25 @@
+import os
+import telebot
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+bot = telebot.TeleBot(os.environ["BOT_TOKEN"])
+
+@bot.message_handler(commands=["start"])
+def start(message):
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(InlineKeyboardButton("🎁 Бесплатные 2 дня", callback_data="trial"))
+    keyboard.add(InlineKeyboardButton("💳 Купить VPN", callback_data="buy"))
+    keyboard.add(InlineKeyboardButton("👤 Мой доступ", callback_data="account"))
+    bot.send_message(message.chat.id, "🐻 BooBusia VPN\n\nВыбери действие:", reply_markup=keyboard)
+
+@bot.callback_query_handler(func=lambda call: True)
+def buttons(call):
+    texts = {
+        "trial": "🎁 Пробный доступ пока не подключён.",
+        "buy": "💳 Оплата пока не подключена.",
+        "account": "👤 У тебя пока нет активной подписки."
+    }
+    bot.answer_callback_query(call.id)
+    bot.send_message(call.message.chat.id, texts.get(call.data, "Неизвестная команда"))
+
+bot.infinity_polling()
